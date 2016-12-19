@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var http = require('http').Server(app).listen(80,'104.46.38.91');;
+var http = require('http').Server(app).listen(80,'168.62.48.183');;
 var io = require('socket.io')(http);
 
 var lobbyUsers = {};
