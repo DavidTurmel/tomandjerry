@@ -1,8 +1,7 @@
 var express = require('express');
 var app = express();
-var http = require('http').Server(app).listen(8888,'192.168.0.50');;
+var http = require('http').Server(app).listen(80,'104.46.38.91');;
 var io = require('socket.io')(http);
-var port = process.env.PORT || 3000;
 
 var lobbyUsers = {};
 var users = {};
@@ -112,6 +111,6 @@ io.on('connection', function(socket) {
 
 });
 
-http.listen(8888, function() {
-    console.log('listening on *: ' + 8888);
+http.listen(80, function() {
+    console.log('listening on *: ' + 80);
 });
