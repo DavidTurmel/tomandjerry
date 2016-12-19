@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Tom & Jerry</title>
+    <link rel="stylesheet" href="/default.css" />
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <div class="page login" id='page-login'>
+      <div class='logo'></div>
+      <input id='username'></input>
+      <button id='login'>Connexion</button>
+    </div>
+    <div class="page lobby" id='page-lobby'>
+      <h1>Tom & Jerry</h1>
+      <h2 id='userLabel'></h2>
+      <h3>Joueurs connectés</h3>
+      <p>
+        Cliquez sur un joueur en ligne pour lancer une partie !
+      </p>
+      <div id='userList'>
+        Aucuns joueurs connectés
+      </div>
+    </div>
+    <div class="page game" id='page-game'>
+      <div id="compt"></div>
+      <div id="background" style="width: 512px"></div>
+      <h4>Score</h4>
+      <div id="score"></div>
+      <div id="resultat"></div>
+    </div>
+    <script src="lib/socket.io-1.2.0.js"></script>
+    <script src="lib/jquery-1.11.1.js"></script>
+    <script src="lib/chrono.js"></script>
+    <script src="/default.js"></script>
+  </body>
+</html>
