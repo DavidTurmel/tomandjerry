@@ -11,6 +11,10 @@ body {
 	margin-top: 20px;
 }
 
+.login{
+	text-align: center;
+}
+
 .page-login {
 	display: flex;
 	flex-direction: column;
@@ -25,8 +29,8 @@ body {
 
 	margin-bottom: 50px;
 
-	width: 350px;
-	height: 350px;
+	width: 640px;
+	height: 416px;
 }
 
 .page.login button {

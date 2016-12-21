@@ -104,21 +104,19 @@
           };
 
           socket.on('update_position', function (data) {
-            console.log("données reçues");
 
-            var xjerry = data.xjerry;
-            var yjerry = data.yjerry;
-            var xtom = data.xtom;
-            var ytom = data.ytom;
+            var player = data.player;
 
-            document.getElementById('jerry').style.left = xjerry;
-            document.getElementById('jerry').style.top = yjerry;
-            document.getElementById('tom').style.left = xtom;
-            document.getElementById('tom').style.top = ytom;
+            var x = data.x;
+            var y = data.y;
+
+            document.getElementById(player).style.left = x;
+            document.getElementById(player).style.top = y;
+
           });
 
-          document.getElementById('background').style.width = "512px";
-          document.getElementById('background').style.height = "480px";
+          document.getElementById('background').style.width = "800px";
+          document.getElementById('background').style.height = "446px";
           document.getElementById('background').style.left = 0;
           document.getElementById('background').style.top = 0;
 
@@ -129,9 +127,9 @@
           jerry.style.left = 0;
           jerry.style.top = 0;
           jerry.style.position = "absolute";
-          jerry.style.width = "20px";
-          jerry.style.height = "20px";
-          jerry.style.backgroundColor = "blue";
+          jerry.style.width = "50px";
+          jerry.style.height = "39px";
+          jerry.style.backgroundImage = "url('img/jerry_50.png')";
 
           window.document.getElementById('background').appendChild(jerry);
 
@@ -142,16 +140,14 @@
           tom.style.left = 0;
           tom.style.top = 0;
           tom.style.position = "absolute";
-          tom.style.width = "20px";
-          tom.style.height = "20px";
-          tom.style.backgroundColor = "red";
+          tom.style.width = "50px";
+          tom.style.height = "53px";
+          tom.style.backgroundImage = "url('img/tom_50.png')";
 
           window.document.getElementById('background').appendChild(tom);
 
           var scorejerry = 0;
           var scoretom = 0;
-
-          console.log(scoretom);
 
           // INITIALISATION DU CLAVIER
           var keysDown = {};
@@ -164,18 +160,14 @@
             delete keysDown[e.keyCode];
           });
 
-          socket.on('refreshUsers', function(users){
-            console.log(users.jerry);
-          });
-
           // Mise à jour du jeu quand tom attrape  jerry (ou quand jerry échape a tom)
           var reset = function () {
 
             jerry.style.left = '10px';
             jerry.style.top = '10px';
 
-            tom.style.left = '482px';
-            tom.style.top = '450px';
+            tom.style.left = '740px';
+            tom.style.top = '383px';
 
           };
 
@@ -197,10 +189,10 @@
 
             //COLLISION ENTRE JOUEURS - SI TOM ATTRAPE JERRY
             if (
-          		(parseInt(document.getElementById("jerry").style.left)) <= ((parseInt(document.getElementById("tom").style.left)) + 20)
-          		&& (parseInt(document.getElementById("tom").style.left)) <= ((parseInt(document.getElementById("jerry").style.left)) + 20)
-          		&& (parseInt(document.getElementById("jerry").style.top)) <= ((parseInt(document.getElementById("tom").style.top)) + 20)
-          		&& (parseInt(document.getElementById("tom").style.top)) <= ((parseInt(document.getElementById("jerry").style.top)) + 20)
+          		(parseInt(document.getElementById("jerry").style.left)) <= ((parseInt(document.getElementById("tom").style.left)) + 50)
+          		&& (parseInt(document.getElementById("tom").style.left)) <= ((parseInt(document.getElementById("jerry").style.left)) + 50)
+          		&& (parseInt(document.getElementById("jerry").style.top)) <= ((parseInt(document.getElementById("tom").style.top)) + (parseInt(document.getElementById("tom").style.height)))
+          		&& (parseInt(document.getElementById("tom").style.top)) <= ((parseInt(document.getElementById("jerry").style.top)) + (parseInt(document.getElementById("jerry").style.height)))
           	) {
               scoretom += 1;
               $('#jerry').hide();
@@ -231,44 +223,55 @@
               compte = 30;
             }
 
+            if (38 in keysDown || 40 in keysDown || 37 in keysDown || 39 in keysDown) {
+              if (cfg.player) {
+                socket.emit('receive_position', {
+                  player: cfg.player,
+                  x: document.getElementById(cfg.player).style.left,
+                  y: document.getElementById(cfg.player).style.top
+                });
+              };
+            }
+
 
           };
 
           var checkCollision = function(player){
             //COLLISION AVEC LA MAP - BAS HAUT DROITE ET GAUCHE
-            if (((parseInt(document.getElementById(player).style.left))+20) >= (parseInt(document.getElementById("background").style.width))) {
-              document.getElementById(player).style.left = '492px';
-            }else if (((parseInt(document.getElementById(player).style.top))+20) >= (parseInt(document.getElementById("background").style.height))) {
-              document.getElementById(player).style.top = '460px';
-            }else if (((parseInt(document.getElementById(player).style.left))) <= (parseInt(document.getElementById("background").style.left))){
+            if (((parseInt(document.getElementById(player).style.left))+50) >= (parseInt(document.getElementById("background").style.width))) {
+              document.getElementById(player).style.left = '750px';
+            }else if (((parseInt(document.getElementById(player).style.top))+(parseInt(document.getElementById(player).style.height))) >= (parseInt(document.getElementById("background").style.height))) {
+              document.getElementById(player).style.top = (parseInt(document.getElementById('background').style.height)-(parseInt(document.getElementById(player).style.height)))+'px';
+            }else if ((parseInt(document.getElementById(player).style.left)) <= (parseInt(document.getElementById("background").style.left))) {
               document.getElementById(player).style.left = '0px';
             }else if (((parseInt(document.getElementById(player).style.top))) <= (parseInt(document.getElementById("background").style.top))) {
               document.getElementById(player).style.top = '0px';
             }
 
             //COLLISION AVEC LA MAP - COIN BAS DROITE
-            if (((parseInt(document.getElementById(player).style.left))+20) >= (parseInt(document.getElementById("background").style.width)) &&
-            ((parseInt(document.getElementById(player).style.top))+20) >= (parseInt(document.getElementById("background").style.height))) {
-              document.getElementById(player).style.left = '492px';
-              document.getElementById(player).style.top = '460px';
+            if ((((parseInt(document.getElementById(player).style.left))+50) >= (parseInt(document.getElementById("background").style.width))) &&
+            (((parseInt(document.getElementById(player).style.top))+(parseInt(document.getElementById(player).style.height))) >= (parseInt(document.getElementById("background").style.height)))) {
+              document.getElementById(player).style.left = '750px';
+              document.getElementById(player).style.top = (parseInt(document.getElementById('background').style.height)-(parseInt(document.getElementById(player).style.height)))+"px";
             //COLLISION AVEC LA MAP - COIN HAUT DROITE
-            }else if (((parseInt(document.getElementById(player).style.left))+20) >= (parseInt(document.getElementById("background").style.width)) &&
+          }else if (((parseInt(document.getElementById(player).style.left))+50) >= (parseInt(document.getElementById("background").style.width)) &&
             (parseInt(document.getElementById(player).style.top)) <= (parseInt(document.getElementById("background").style.top))) {
-              document.getElementById(player).style.left = '492px';
+              document.getElementById(player).style.left = '750px';
               document.getElementById(player).style.top = '0px';
             }
 
             //COLLISION AVEC LA MAP - COIN BAS GAUCHE
-            if ((parseInt(document.getElementById(player).style.left)) <= (parseInt(document.getElementById("background").style.left)) &&
-            ((parseInt(document.getElementById(player).style.top))+20) >= (parseInt(document.getElementById("background").style.height))) {
+            if (((parseInt(document.getElementById(player).style.left)) <= (parseInt(document.getElementById("background").style.left))) &&
+            (((parseInt(document.getElementById(player).style.top))+(parseInt(document.getElementById(player).style.height))) >= (parseInt(document.getElementById("background").style.height)))) {
               document.getElementById(player).style.left = '0px';
-              document.getElementById(player).style.top = '460px';
+              document.getElementById(player).style.top = (parseInt(document.getElementById('background').style.height)-(parseInt(document.getElementById(player).style.height)))+"px";
             //COLLISION AVEC LA MAP - COIN HAUT GAUCHE
             }else if ((parseInt(document.getElementById(player).style.left)) <= (parseInt(document.getElementById("background").style.left)) &&
               (parseInt(document.getElementById(player).style.top)) <= (parseInt(document.getElementById("background").style.top))){
                 document.getElementById(player).style.left = '0px';
                 document.getElementById(player).style.top = '0px';
             }
+
           }
 
           // The main game loop
@@ -279,13 +282,6 @@
           	update(delta / 1000, cfg.player);
 
             checkCollision(cfg.player);
-
-            socket.emit('receive_position', {
-              xjerry: document.getElementById('jerry').style.left,
-              yjerry: document.getElementById('jerry').style.top,
-              xtom: document.getElementById('tom').style.left,
-              ytom: document.getElementById('tom').style.top
-            });
 
           	then = now;
 

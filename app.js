@@ -1,11 +1,13 @@
 var express = require('express');
 var app = express();
-var http = require('http').Server(app).listen(80,'168.62.48.183');;
+var http = require('http').Server(app).listen(3020);;
 var io = require('socket.io')(http);
 
 var lobbyUsers = {};
 var users = {};
 var activeGames = {};
+
+DEBUG = false;
 
 app.use(express.static('public'));
 
@@ -14,19 +16,19 @@ app.get('/', function(req, res) {
 });
 
 io.on('connection', function(socket) {
-  console.log('new connection ' + socket.id);
+  if(DEBUG) console.log('new connection ' + socket.id);
 
   socket.on('login', function(userId) {
-    console.log(userId + ' joining lobby');
+    if(DEBUG) console.log(userId + ' joining lobby');
     socket.userId = userId;
 
     if (!users[userId]) {
-      console.log('creating new user');
+      if(DEBUG) console.log('creating new user');
       users[userId] = {userId: socket.userId, games:{}};
     } else {
-      console.log('user found!');
+    if(DEBUG)   console.log('user found!');
       Object.keys(users[userId].games).forEach(function(gameId) {
-        console.log('gameid - ' + gameId);
+        if(DEBUG) console.log('gameid - ' + gameId);
       });
     }
 
@@ -40,7 +42,7 @@ io.on('connection', function(socket) {
 
   socket.on('invite', function(opponentId) {
 
-    console.log('got an invite from: ' + socket.userId + ' --> ' + opponentId);
+    if(DEBUG) console.log('got an invite from: ' + socket.userId + ' --> ' + opponentId);
 
     socket.broadcast.emit('leavelobby', socket.userId);
     socket.broadcast.emit('leavelobby', opponentId);
@@ -56,7 +58,7 @@ io.on('connection', function(socket) {
     users[game.users.jerry].games[game.id] = game.id;
     users[game.users.tom].games[game.id] = game.id;
 
-    console.log('starting game: ' + game.id);
+    if(DEBUG) console.log('starting game: ' + game.id);
     lobbyUsers[game.users.jerry].emit('joingame', {game: game, color: 'jerry'});
     lobbyUsers[game.users.tom].emit('joingame', {game: game, color: 'tom'});
 
@@ -71,24 +73,24 @@ io.on('connection', function(socket) {
   var players;
 
   socket.emit('update_position', lastPosition, function(){
-    console.log('envoi des données au client')
+    if(DEBUG) console.log('envoi des données au client')
   });
 
   socket.on('receive_position', function (data) {
-    console.log('réception des données côté serveur');
+    if(DEBUG) console.log('réception des données côté serveur');
      lastPosition = data;
-    console.log(lastPosition.xjerry);
-    console.log(lastPosition.xtom);
+    if(DEBUG) console.log(lastPosition.xjerry);
+    if(DEBUG) console.log(lastPosition.xtom);
      socket.broadcast.emit('update_position', data); // send `data` to all other clients
   });
 
   socket.on('disconnect', function(msg) {
 
-    console.log(msg);
+    if(DEBUG) console.log(msg);
 
     if (socket && socket.userId && socket.gameId) {
-      console.log(socket.userId + ' disconnected');
-      console.log(socket.gameId + ' disconnected');
+      if(DEBUG) console.log(socket.userId + ' disconnected');
+      if(DEBUG) console.log(socket.gameId + ' disconnected');
     }
 
     delete lobbyUsers[socket.userId];
@@ -105,12 +107,8 @@ io.on('connection', function(socket) {
   /////////////////////
 
   socket.on('dashboardlogin', function() {
-    console.log('dashboard joined');
+    if(DEBUG) console.log('dashboard joined');
     socket.emit('dashboardlogin', {games: activeGames});
   });
 
-});
-
-http.listen(80, function() {
-    console.log('listening on *: ' + 80);
 });
