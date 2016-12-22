@@ -6,6 +6,7 @@
       var username;
       var playerColor;
       var game;
+      var timer;
       var board;
       var usersOnline = [];
       var myGames = [];
@@ -29,7 +30,8 @@
       });
 
       socket.on('gameadd', function(msg) {
-
+        game = msg.gameId;
+        
       });
 
       socket.on('gameremove', function(msg) {
@@ -40,11 +42,12 @@
         console.log("joined as game id: " + msg.game.id );
         playerColor = msg.color;
         initGame(msg.game);
-        decompte();
 
         $('#page-lobby').hide();
         $('#page-game').show();
         $('#background').show();
+
+        timer = setInterval('decompte()',1000);
 
       });
 
@@ -146,9 +149,6 @@
 
           window.document.getElementById('background').appendChild(tom);
 
-          var scorejerry = 0;
-          var scoretom = 0;
-
           // INITIALISATION DU CLAVIER
           var keysDown = {};
 
@@ -160,7 +160,7 @@
             delete keysDown[e.keyCode];
           });
 
-          // Mise à jour du jeu quand tom attrape  jerry (ou quand jerry échape a tom)
+          // Mise à jour de la position des joueurs quand tom attrape jerry (ou quand jerry échape a tom)
           var reset = function () {
 
             jerry.style.left = '10px';
@@ -187,42 +187,6 @@
           		document.getElementById(player).style.left = (parseInt(document.getElementById(player).style.left)) + (256 * modifier) + 'px';
             }
 
-            //COLLISION ENTRE JOUEURS - SI TOM ATTRAPE JERRY
-            if (
-          		(parseInt(document.getElementById("jerry").style.left)) <= ((parseInt(document.getElementById("tom").style.left)) + 50)
-          		&& (parseInt(document.getElementById("tom").style.left)) <= ((parseInt(document.getElementById("jerry").style.left)) + 50)
-          		&& (parseInt(document.getElementById("jerry").style.top)) <= ((parseInt(document.getElementById("tom").style.top)) + (parseInt(document.getElementById("tom").style.height)))
-          		&& (parseInt(document.getElementById("tom").style.top)) <= ((parseInt(document.getElementById("jerry").style.top)) + (parseInt(document.getElementById("jerry").style.height)))
-          	) {
-              scoretom += 1;
-              $('#jerry').hide();
-              $('#tom').hide();
-              $('#resultat').text('Tom a attrapé Jerry !');
-              setTimeout(function(){
-                $('#resultat').text('');
-                $('#jerry').show();
-                $('#tom').show();
-                reset();
-              }, 3000);
-          	}
-
-            //SI LE COMPTE A REBOURS EST A ZERO - JERRY GAGNE
-            if(compte == 0 || compte < 0) {
-              compte = 0;
-              clearInterval(timer);
-              scorejerry += 1;
-              $('#jerry').hide();
-              $('#tom').hide();
-              $('#resultat').text('Jerry a échappé à Tom !');
-              setTimeout(function(){
-                $('#resultat').text('');
-                $('#jerry').show();
-                $('#tom').show();
-                reset();
-              }, 3000);
-              compte = 30;
-            }
-
             if (38 in keysDown || 40 in keysDown || 37 in keysDown || 39 in keysDown) {
               if (cfg.player) {
                 socket.emit('receive_position', {
@@ -235,6 +199,8 @@
 
 
           };
+
+          //COLLISION AVEC L'ENVIRONNEMENT
 
           var checkCollision = function(player){
             //COLLISION AVEC LA MAP - BAS HAUT DROITE ET GAUCHE
@@ -274,7 +240,61 @@
 
           }
 
-          // The main game loop
+          //Initialisation des scores
+          var scoretom = 0;
+          var scorejerry = 0;
+
+          //COLLISION ENTRE JOUEURS
+
+          var checkCollisionPlayer = function () {
+            if (
+              (parseInt(document.getElementById("jerry").style.left)) <= ((parseInt(document.getElementById("tom").style.left)) + 50)
+              && (parseInt(document.getElementById("tom").style.left)) <= ((parseInt(document.getElementById("jerry").style.left)) + 50)
+              && (parseInt(document.getElementById("jerry").style.top)) <= ((parseInt(document.getElementById("tom").style.top)) + (parseInt(document.getElementById("tom").style.height)))
+              && (parseInt(document.getElementById("tom").style.top)) <= ((parseInt(document.getElementById("jerry").style.top)) + (parseInt(document.getElementById("jerry").style.height)))
+            ) {
+              clearInterval(timer);
+              reset();
+              $('#jerry').hide();
+              $('#tom').hide();
+              $('#resultat').text('Tom a attrapé Jerry !');
+              scoretom = scoretom + 1;
+              compte = 30;
+              setTimeout(function(){
+                reset();
+                timer = setInterval('decompte()',1000);
+                $('#resultat').text('');
+                $('#jerry').show();
+                $('#tom').show();
+              }, 5000);
+              $('#score-tom').text('');
+            }
+            $('#score-tom').text(scoretom);
+
+            //SI LE COMPTE A REBOURS EST A ZERO - JERRY GAGNE
+            if(compte < 1) {
+              clearInterval(timer);
+              reset();
+              $('#jerry').hide();
+              $('#tom').hide();
+              scorejerry = scorejerry + 1;
+              compte = 30;
+              $('#resultat').text('Jerry a échappé à Tom !');
+              setTimeout(function(){
+                reset();
+                timer = setInterval('decompte()',1000);
+                $('#resultat').text('');
+                $('#jerry').show();
+                $('#tom').show();
+              }, 5000);
+              $('#score-jerry').text('');
+            }
+            $('#score-jerry').text(scorejerry);
+          }
+
+
+
+          // GAME LOOP
           var main = function () {
           	var now = Date.now();
           	var delta = now - then;
@@ -283,17 +303,17 @@
 
             checkCollision(cfg.player);
 
+            checkCollisionPlayer();
+
           	then = now;
 
-          	// Request to do this again ASAP
           	requestAnimationFrame(main);
           };
 
-          // Cross-browser support for requestAnimationFrame
-          var w = window;
-          requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
-          // Let's play this game!
+          requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.mozRequestAnimationFrame;
+
+          // Play the game!
           var then = Date.now();
           reset();
           main();

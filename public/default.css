@@ -72,6 +72,12 @@ body {
 	display: none;
 }
 
+.score{
+	font-size: 16px;
+	font-weight: 700;
+	font-family: fantasy;
+}
+
 .circle {
 	background-color: green;
 	width: 30px;

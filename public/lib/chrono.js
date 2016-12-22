@@ -12,5 +12,3 @@ function decompte() {
 
 	compte--;
 };
-
-var timer = setInterval('decompte()',1000);
